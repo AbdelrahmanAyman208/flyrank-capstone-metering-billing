@@ -1,0 +1,35 @@
+{
+  "name": "flyrank-capstone-metering-billing",
+  "version": "1.0.0",
+  "description": "Usage Metering & Billing Engine — FlyRank capstone project",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node seeds/seed.js",
+    "setup": "npm run migrate && npm run seed",
+    "test": "jest --verbose --forceExit"
+  },
+  "keywords": [
+    "metering",
+    "billing",
+    "saas",
+    "stripe"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-cron": "^3.0.3",
+    "pdfkit": "^0.20.2",
+    "pg": "^8.13.0",
+    "pg-mem": "^3.0.14",
+    "stripe": "^14.14.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

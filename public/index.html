@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Usage Metering & Billing Engine Dashboard — generate events, view quotas, track costs, and manage plans">
+  <title>Metering & Billing Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       Design System — CSS Custom Properties
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-body: #06080f;
+      --bg-primary: #0c101c;
+      --bg-card: rgba(17, 24, 45, 0.7);
+      --bg-card-solid: #111a2d;
+      --bg-card-hover: #162038;
+      --bg-input: rgba(8, 12, 25, 0.8);
+      --bg-glass: rgba(17, 24, 45, 0.45);
+
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --border-focus: rgba(129, 140, 248, 0.5);
+
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+
+      --accent: #818cf8;
+      --accent-bright: #a5b4fc;
+      --accent-dim: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+
+      --green: #34d399;
+      --green-bg: rgba(52, 211, 153, 0.1);
+      --green-border: rgba(52, 211, 153, 0.2);
+
+      --yellow: #fbbf24;
+      --yellow-bg: rgba(251, 191, 36, 0.1);
+      --yellow-border: rgba(251, 191, 36, 0.2);
+
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, 0.1);
+      --red-border: rgba(248, 113, 113, 0.2);
+
+      --purple: #c084fc;
+      --purple-bg: rgba(192, 132, 252, 0.1);
+      --purple-border: rgba(192, 132, 252, 0.2);
+
+      --orange: #fb923c;
+      --orange-bg: rgba(251, 146, 60, 0.1);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 100px;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 40px var(--accent-glow);
+      --shadow-green-glow: 0 0 30px rgba(52, 211, 153, 0.15);
+
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --t-fast: 150ms;
+      --t-base: 250ms;
+      --t-slow: 400ms;
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Background gradient orbs */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(120px);
+    }
+
+    body::before {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(79, 70, 229, 0.08), transparent 70%);
+      top: -200px;
+      right: -100px;
+    }
+
+    body::after {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.05), transparent 70%);
+      bottom: -150px;
+      left: -100px;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .app-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Header ────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: var(--shadow-glow);
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot-live {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    .status-dot-live.offline {
+      background: var(--red);
+      animation: none;
+    }
+
+    .tenant-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tenant-selector label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tenant-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      padding: 9px 14px;
+      width: 280px;
+      transition: border-color var(--t-fast) var(--ease);
+      outline: none;
+    }
+
+    .tenant-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+    }
+
+    .btn {
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent-dim);
+      color: white;
+      padding: 9px 20px;
+      font-size: 13px;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* ── States ─────────────────────────────────────────────────── */
+    .state-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 50vh;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .state-icon {
+      font-size: 52px;
+      opacity: 0.9;
+    }
+
+    .state-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .state-message {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 420px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.75);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+    }
+
+    @keyframes successPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(52, 211, 153, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card-solid) 25%, var(--bg-card-hover) 50%, var(--bg-card-solid) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius-lg);
+    }
+
+    .retry-btn {
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: var(--radius-sm);
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .retry-btn:hover {
+      background: var(--red-bg);
+      transform: translateY(-1px);
+    }
+
+    /* ── Card Base ──────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: border-color var(--t-base) var(--ease);
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    /* ── Dashboard ──────────────────────────────────────────────── */
+    .dashboard {
+      display: none;
+    }
+
+    .dashboard.active {
+      display: block;
+      animation: fadeIn var(--t-slow) var(--ease);
+    }
+
+    /* ── Top Row: Plan + Upgrade ────────────────────────────────── */
+    .top-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    .plan-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      width: fit-content;
+    }
+
+    .plan-badge.free {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: var(--accent-bright);
+    }
+
+    .plan-badge.pro {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.08));
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      color: var(--yellow);
+    }
+
+    .plan-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .plan-badge.free .plan-badge-dot {
+      background: var(--accent);
+    }
+
+    .plan-badge.pro .plan-badge-dot {
+      background: var(--yellow);
+    }
+
+    .tenant-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .subscription-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.active {
+      background: var(--green);
+    }
+
+    .status-dot.past_due {
+      background: var(--yellow);
+    }
+
+    .status-dot.canceled {
+      background: var(--red);
+    }
+
+    .upgrade-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upgrade-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #1a1a2e;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 14px 32px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+    }
+
+    .upgrade-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(245, 158, 11, 0.35);
+    }
+
+    .upgrade-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .upgrade-btn.loading .btn-text {
+      display: none;
+    }
+
+    .upgrade-btn.loading .btn-loading-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-loading-text {
+      display: none;
+    }
+
+    .btn-spinner-sm {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(26, 26, 46, 0.25);
+      border-top-color: #1a1a2e;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .pro-active-badge {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-md);
+      padding: 14px 24px;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Quota Cards ────────────────────────────────────────────── */
+    .quota-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .quota-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quota-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      transition: background var(--t-base) var(--ease);
+    }
+
+    .quota-card.normal::before {
+      background: linear-gradient(90deg, var(--green), #6ee7b7);
+    }
+
+    .quota-card.warning::before {
+      background: linear-gradient(90deg, var(--yellow), #fcd34d);
+    }
+
+    .quota-card.danger::before {
+      background: linear-gradient(90deg, var(--red), #fca5a5);
+    }
+
+    .quota-values {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .quota-used {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      animation: countUp var(--t-slow) var(--ease);
+    }
+
+    .quota-card.normal .quota-used {
+      color: var(--green);
+    }
+
+    .quota-card.warning .quota-used {
+      color: var(--yellow);
+    }
+
+    .quota-card.danger .quota-used {
+      color: var(--red);
+    }
+
+    .quota-limit {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .quota-bar-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .quota-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width var(--t-slow) var(--ease-bounce), background var(--t-base) var(--ease);
+      min-width: 2px;
+    }
+
+    .quota-card.normal .quota-bar-fill {
+      background: linear-gradient(90deg, rgba(52, 211, 153, 0.5), var(--green));
+    }
+
+    .quota-card.warning .quota-bar-fill {
+      background: linear-gradient(90deg, rgba(251, 191, 36, 0.5), var(--yellow));
+    }
+
+    .quota-card.danger .quota-bar-fill {
+      background: linear-gradient(90deg, rgba(248, 113, 113, 0.5), var(--red));
+    }
+
+    .quota-percentage {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       Generate Usage Panel — the star feature
+       ══════════════════════════════════════════════════════════════ */
+    .generate-panel {
+      margin-bottom: 16px;
+      background: var(--bg-glass);
+      border: 1px solid rgba(129, 140, 248, 0.12);
+      box-shadow: var(--shadow-lg), 0 0 60px rgba(99, 102, 241, 0.06);
+    }
+
+    .generate-panel .card-header {
+      margin-bottom: 20px;
+    }
+
+    .generate-panel .card-title {
+      color: var(--accent-bright);
+      font-size: 12px;
+    }
+
+    /* Usage type toggle */
+    .usage-type-toggle {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .usage-type-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      background: transparent;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .usage-type-btn:hover {
+      color: var(--text-secondary);
+    }
+
+    .usage-type-btn.active {
+      background: var(--accent-dim);
+      color: white;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Form layout */
+    .generate-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .form-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color var(--t-fast) var(--ease);
+      width: 100%;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* Token breakdown section */
+    .token-breakdown {
+      display: none;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      gap: 14px;
+      flex-direction: column;
+    }
+
+    .token-breakdown.visible {
+      display: flex;
+      animation: fadeInScale var(--t-base) var(--ease);
+    }
+
+    .token-breakdown-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    .token-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 80px 100px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .token-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .token-label-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-input {
+      background: var(--accent);
+    }
+
+    .dot-cached {
+      background: var(--green);
+    }
+
+    .dot-output {
+      background: var(--purple);
+    }
+
+    .dot-reasoning {
+      background: var(--orange);
+    }
+
+    .token-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .token-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+      transition: transform var(--t-fast) var(--ease);
+    }
+
+    .token-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .token-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .token-input-small {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 6px 10px;
+      text-align: right;
+      outline: none;
+      width: 100%;
+    }
+
+    .token-input-small:focus {
+      border-color: var(--border-focus);
+    }
+
+    .token-cost {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .token-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .token-total-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .token-total-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-bright);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Cost preview */
+    .cost-preview {
+      background: rgba(52, 211, 153, 0.04);
+      border: 1px solid rgba(52, 211, 153, 0.1);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cost-preview-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .cost-preview-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--green);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    /* Submit area */
+    .generate-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, var(--accent-dim), #6366f1);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(79, 70, 229, 0.25);
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-generate.success {
+      background: linear-gradient(135deg, #059669, var(--green));
+      animation: successPulse 0.6s var(--ease);
+    }
+
+    .quota-remaining-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Cost Breakdown Card ───────────────────────────────────── */
+    .cost-card {
+      margin-bottom: 16px;
+    }
+
+    .cost-total {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+    }
+
+    .cost-breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .cost-item {
+      background: rgba(255, 255, 255, 0.025);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background var(--t-fast) var(--ease);
+    }
+
+    .cost-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .cost-item-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cost-item-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Events Table ──────────────────────────────────────────── */
+    .events-card {
+      margin-bottom: 16px;
+    }
+
+    .events-filter {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      padding: 2px;
+    }
+
+    .filter-btn {
+      padding: 5px 14px;
+      border: none;
+      border-radius: 5px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .filter-btn:hover {
+      color: var(--text-secondary);
+    }
+
+    .filter-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .events-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .events-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .events-table th {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .events-table td {
+      font-size: 13px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      transition: background var(--t-fast) var(--ease);
+    }
+
+    .events-table tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .type-badge.api_call {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent-bright);
+    }
+
+    .type-badge.ai_tokens {
+      background: var(--purple-bg);
+      color: var(--purple);
+    }
+
+    .quantity-val {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .time-val {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .metadata-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-family: 'Inter', sans-serif;
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .metadata-toggle:hover {
+      color: var(--text-secondary);
+      border-color: var(--border-hover);
+    }
+
+    .metadata-detail {
+      display: none;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .metadata-detail.visible {
+      display: table-row;
+    }
+
+    .metadata-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .metadata-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .metadata-chip-val {
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .empty-events {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .empty-events .empty-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+
+    /* ── Toast Notifications ───────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--bg-card-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 300px;
+      max-width: 440px;
+      pointer-events: auto;
+      animation: slideInRight var(--t-base) var(--ease-bounce);
+    }
+
+    .toast.exit {
+      animation: slideOutRight var(--t-base) var(--ease);
+    }
+
+    .toast-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .toast-body {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .toast-message {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .toast.success {
+      border-color: var(--green-border);
+    }
+
+    .toast.error {
+      border-color: var(--red-border);
+    }
+
+    .toast.info {
+      border-color: rgba(99, 102, 241, 0.25);
+    }
+
+    .toast.warning {
+      border-color: var(--yellow-border);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+
+      .tenant-selector {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .tenant-input {
+        width: 100%;
+      }
+
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+
+      .quota-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cost-breakdown-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .token-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .generate-actions {
+        flex-direction: column;
+      }
+    }
+
+    /* ── Test Runner ────────────────────────────────────────────── */
+    .test-stat {
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .test-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .test-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .test-stat-pass .test-stat-value {
+      color: var(--green);
+    }
+
+    .test-stat-fail .test-stat-value {
+      color: var(--red);
+    }
+
+    .test-overall-badge {
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .test-overall-badge.pass {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .test-overall-badge.fail {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .test-suite {
+      margin-bottom: 12px;
+    }
+
+    .test-suite-header {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .test-suite-header.pass {
+      color: var(--green);
+    }
+
+    .test-suite-header.fail {
+      color: var(--red);
+    }
+
+    .test-describe {
+      margin-left: 20px;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .test-case {
+      margin-left: 40px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .test-case.pass {
+      color: var(--text-primary);
+    }
+
+    .test-case.fail {
+      color: var(--red);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="app-container">
+    <!-- ── Header ──────────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <h1>Metering & Billing</h1>
+          <div class="header-subtitle">
+            <span class="status-dot-live" id="serverStatus"></span>
+            <span id="serverStatusText">Checking server…</span>
+          </div>
+        </div>
+      </div>
+      <div class="tenant-selector">
+        <label for="tenantIdInput">Tenant</label>
+        <input type="text" id="tenantIdInput" class="tenant-input" placeholder="Paste tenant UUID…">
+        <button id="loadBtn" class="btn btn-primary" onclick="loadDashboard()">Load</button>
+      </div>
+    </header>
+
+    <!-- ── Loading ─────────────────────────────────────────────── -->
+    <div id="loadingState" class="state-container" style="display:none;">
+      <div class="spinner"></div>
+      <div class="state-title">Loading usage data…</div>
+    </div>
+
+    <!-- ── Skeleton ────────────────────────────────────────────── -->
+    <div id="skeletonState" style="display:none;">
+      <div class="skeleton" style="height:130px;margin-bottom:16px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="skeleton" style="height:170px;"></div>
+        <div class="skeleton" style="height:170px;"></div>
+      </div>
+      <div class="skeleton" style="height:200px;margin-bottom:16px;"></div>
+    </div>
+
+    <!-- ── Error ───────────────────────────────────────────────── -->
+    <div id="errorState" class="state-container" style="display:none;">
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Failed to load</div>
+      <div id="errorMessage" class="state-message">Could not connect to the server.</div>
+      <button class="retry-btn" onclick="loadDashboard()">↻ Retry</button>
+    </div>
+
+    <!-- ── Prompt State ────────────────────────────────────────── -->
+    <div id="promptState" class="state-container">
+      <div class="state-icon">📊</div>
+      <div class="state-title">Enter a Tenant ID</div>
+      <div class="state-message">Paste a tenant UUID from the server console above and click Load to begin.</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Dashboard (shown after loading tenant)
+         ══════════════════════════════════════════════════════════ -->
+    <div id="dashboard" class="dashboard">
+
+      <!-- Plan + Upgrade Row -->
+      <div class="top-row">
+        <div class="card">
+          <div class="plan-section">
+            <div id="planBadge" class="plan-badge free">
+              <span class="plan-badge-dot"></span>
+              <span id="planName">Free</span>
+            </div>
+            <div id="tenantName" class="tenant-name"></div>
+            <div id="subscriptionStatus" class="subscription-status">
+              <span class="status-dot active"></span>
+              <span>Active</span>
+            </div>
+          </div>
+        </div>
+        <div id="upgradeSection" class="upgrade-section">
+          <button id="upgradeBtn" class="upgrade-btn" onclick="handleUpgrade()">
+            <span class="btn-text">⚡ Upgrade to Pro</span>
+            <span class="btn-loading-text"><span class="btn-spinner-sm"></span> Upgrading…</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alerts Container -->
+      <div id="alertsContainer" style="display:none; margin-bottom: 16px;">
+        <div class="card" style="border-color: var(--orange); background: var(--orange-bg);">
+          <div class="card-header" style="margin-bottom: 8px;"><span class="card-title" style="color: var(--orange);">⚠️
+              Usage Alerts</span></div>
+          <div id="alertsList"
+            style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-primary);"></div>
+        </div>
+      </div>
+
+      <!-- Quota Bars -->
+      <div class="quota-grid">
+        <div id="apiQuotaCard" class="card quota-card normal">
+          <div class="card-header"><span class="card-title">API Calls</span></div>
+          <div class="quota-values">
+            <span id="apiUsed" class="quota-used">0</span>
+            <span id="apiLimit" class="quota-limit">/ 1,000</span>
+          </div>
+          <div class="quota-bar-track">
+            <div id="apiBarFill" class="quota-bar-fill" style="width:0%;"></div>
+          </div>
+          <div id="apiPercentage" class="quota-percentage">0%</div>
+        </div>
+        <div id="tokenQuotaCard" class="card quota-card normal">
+          <div class="card-header"><span class="card-title">AI Tokens</span></div>
+          <div class="quota-values">
+            <span id="tokenUsed" class="quota-used">0</span>
+            <span id="tokenLimit" class="quota-limit">/ 100,000</span>
+          </div>
+          <div class="quota-bar-track">
+            <div id="tokenBarFill" class="quota-bar-fill" style="width:0%;"></div>
+          </div>
+          <div id="tokenPercentage" class="quota-percentage">0%</div>
+        </div>
+      </div>
+
+      <!-- ═══ Generate Usage Panel ═══ -->
+      <div class="card generate-panel">
+        <div class="card-header">
+          <span class="card-title">🚀 Generate Usage Event</span>
+        </div>
+
+        <div class="generate-form">
+          <!-- Usage type toggle -->
+          <div class="usage-type-toggle">
+            <button class="usage-type-btn active" data-type="api_call" onclick="setUsageType('api_call')">
+              📡 API Call
+            </button>
+            <button class="usage-type-btn" data-type="ai_tokens" onclick="setUsageType('ai_tokens')">
+              🧠 AI Tokens
+            </button>
+          </div>
+
+          <!-- API Call: quantity -->
+          <div id="apiCallFields">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Quantity</label>
+                <input type="number" id="apiQuantity" class="form-input" value="1" min="1" max="100000"
+                  oninput="updateCostPreview()">
+                <div class="form-hint">Number of API calls to record</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Idempotency Key</label>
+                <input type="text" id="apiIdempotencyKey" class="form-input" placeholder="Auto-generated">
+                <div class="form-hint">Leave blank for auto-generate, or set manually to test duplicates</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Tokens: token breakdown -->
+          <div id="aiTokenFields" style="display:none;">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Idempotency Key</label>
+              <input type="text" id="tokenIdempotencyKey" class="form-input" placeholder="Auto-generated">
+            </div>
+
+            <div class="token-breakdown visible">
+              <div class="token-breakdown-title">Token Breakdown</div>
+
+              <div class="token-row">
+                <div class="token-label"><span class="token-label-dot dot-input"></span> Input tokens</div>
+                <input type="range" class="token-slider" id="sliderInput" min="0" max="10000" value="500"
+                  oninput="syncToken('input')">
+                <input type="number" class="token-input-small" id="valInput" value="500" min="0"
+                  oninput="syncTokenFromInput('input')">
+                <div class="token-cost" id="costInput">$0.125000</div>
+              </div>
+
+              <div class="token-row">
+                <div class="token-label"><span class="token-label-dot dot-cached"></span> Cached input</div>
+                <input type="range" class="token-slider" id="sliderCached" min="0" max="10000" value="200"
+                  oninput="syncToken('cached')">
+                <input type="number" class="token-input-small" id="valCached" value="200" min="0"
+                  oninput="syncTokenFromInput('cached')">
+                <div class="token-cost" id="costCached">$0.025000</div>
+              </div>
+
+              <div class="token-row">
+                <div class="token-label"><span class="token-label-dot dot-output"></span> Output tokens</div>
+                <input type="range" class="token-slider" id="sliderOutput" min="0" max="10000" value="300"
+                  oninput="syncToken('output')">
+                <input type="number" class="token-input-small" id="valOutput" value="300" min="0"
+                  oninput="syncTokenFromInput('output')">
+                <div class="token-cost" id="costOutput">$0.300000</div>
+              </div>
+
+              <div class="token-row">
+                <div class="token-label"><span class="token-label-dot dot-reasoning"></span> Reasoning tokens</div>
+                <input type="range" class="token-slider" id="sliderReasoning" min="0" max="10000" value="100"
+                  oninput="syncToken('reasoning')">
+                <input type="number" class="token-input-small" id="valReasoning" value="100" min="0"
+                  oninput="syncTokenFromInput('reasoning')">
+                <div class="token-cost" id="costReasoning">$0.100000</div>
+              </div>
+
+              <div class="token-total-row">
+                <span class="token-total-label">Total tokens</span>
+                <span class="token-total-value" id="totalTokens">1,100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost preview -->
+          <div class="cost-preview">
+            <span class="cost-preview-label">Estimated cost for this event</span>
+            <span class="cost-preview-value" id="eventCostPreview">$0.000500</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="generate-actions">
+            <span class="quota-remaining-hint" id="quotaHint">—</span>
+            <button class="btn-generate" id="generateBtn" onclick="submitUsageEvent()">
+              🚀 Send Request
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Card -->
+      <div class="card cost-card">
+        <div class="card-header"><span class="card-title">Current Month Cost</span></div>
+        <div id="costTotal" class="cost-total">$0.000000</div>
+        <div class="cost-breakdown-grid">
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-input" style="width:6px;height:6px;"></span>
+              API Calls</span>
+            <span id="costApiCalls" class="cost-item-value">$0.000000</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-output" style="width:6px;height:6px;"></span>
+              AI Tokens (total)</span>
+            <span id="costAiTokens" class="cost-item-value">$0.000000</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-input" style="width:6px;height:6px;"></span>
+              Input tokens</span>
+            <span id="costInputTokens" class="cost-item-value">—</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-cached" style="width:6px;height:6px;"></span>
+              Cached input</span>
+            <span id="costCachedTokens" class="cost-item-value">—</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-output" style="width:6px;height:6px;"></span>
+              Output tokens</span>
+            <span id="costOutputTokens" class="cost-item-value">—</span>
+          </div>
+          <div class="cost-item">
+            <span class="cost-item-label"><span class="token-label-dot dot-reasoning"
+                style="width:6px;height:6px;"></span> Reasoning tokens</span>
+            <span id="costReasoningTokens" class="cost-item-value">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Events -->
+      <div class="card events-card">
+        <div class="card-header">
+          <span class="card-title">Recent Events</span>
+          <div class="events-filter">
+            <button class="filter-btn active" data-filter="all" onclick="filterEvents('all')">All</button>
+            <button class="filter-btn" data-filter="api_call" onclick="filterEvents('api_call')">API</button>
+            <button class="filter-btn" data-filter="ai_tokens" onclick="filterEvents('ai_tokens')">Tokens</button>
+          </div>
+        </div>
+        <div class="events-table-wrapper">
+          <table class="events-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Details</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="eventsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Invoices -->
+      <div class="card invoices-card">
+        <div class="card-header">
+          <span class="card-title">Monthly Invoices</span>
+          <button class="btn btn-primary" onclick="triggerRollup()" id="btnRollup">Test End of Month Rollup</button>
+        </div>
+        <div class="events-table-wrapper">
+          <table class="events-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Status</th>
+                <th>Line Items</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ Test Runner Panel ═══ -->
+      <div class="card test-runner-card" id="testRunnerCard">
+        <div class="card-header">
+          <span class="card-title">🧪 Test Runner</span>
+          <button class="btn btn-primary" onclick="runTests()" id="btnRunTests">
+            ▶ Run All Tests
+          </button>
+        </div>
+
+        <!-- Summary bar -->
+        <div id="testSummary" style="display:none; margin-bottom: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div class="test-stat">
+              <span class="test-stat-label">Total</span>
+              <span class="test-stat-value" id="testTotal">0</span>
+            </div>
+            <div class="test-stat test-stat-pass">
+              <span class="test-stat-label">Passed</span>
+              <span class="test-stat-value" id="testPassed">0</span>
+            </div>
+            <div class="test-stat test-stat-fail" id="testFailStat" style="display:none;">
+              <span class="test-stat-label">Failed</span>
+              <span class="test-stat-value" id="testFailed">0</span>
+            </div>
+            <div class="test-stat">
+              <span class="test-stat-label">Duration</span>
+              <span class="test-stat-value" id="testDuration">—</span>
+            </div>
+            <div id="testOverallBadge" class="test-overall-badge"></div>
+          </div>
+        </div>
+
+        <!-- Test results tree -->
+        <div id="testResults" style="margin-top: 8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       Application Logic — zero dependencies, vanilla JS
+       ═══════════════════════════════════════════════════════════════ */
+
+    const API = window.location.origin;
+    let currentTenantId = null;
+    let dashboardData = null;
+    let currentUsageType = 'api_call';
+    let currentFilter = 'all';
+
+    // ── Pricing constants (mirror backend src/config/pricing.js) ──
+    const PRICING = {
+      INPUT_TOKEN_RATE: 250,
+      CACHED_INPUT_TOKEN_RATE: 125,
+      OUTPUT_TOKEN_RATE: 1000,
+      REASONING_TOKEN_RATE: 1000,
+      API_CALL_RATE: 500,
+    };
+
+    // ── Init ──────────────────────────────────────────────────────
+    (function init() {
+      checkServerHealth();
+      const params = new URLSearchParams(window.location.search);
+      const tid = params.get('tenantId');
+      if (tid) {
+        document.getElementById('tenantIdInput').value = tid;
+        loadDashboard();
+      }
+      updateCostPreview();
+    })();
+
+    // ── Server health check ──────────────────────────────────────
+    async function checkServerHealth() {
+      const dot = document.getElementById('serverStatus');
+      const txt = document.getElementById('serverStatusText');
+      try {
+        const r = await fetch(API + '/health');
+        if (r.ok) {
+          dot.classList.remove('offline');
+          txt.textContent = 'Server connected';
+        } else {
+          dot.classList.add('offline');
+          txt.textContent = 'Server error';
+        }
+      } catch {
+        dot.classList.add('offline');
+        txt.textContent = 'Server offline';
+      }
+    }
+
+    // ── State management ─────────────────────────────────────────
+    function showState(stateId) {
+      ['loadingState', 'skeletonState', 'errorState', 'promptState'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('dashboard').classList.remove('active');
+      if (stateId === 'dashboard') {
+        document.getElementById('dashboard').classList.add('active');
+      } else if (stateId) {
+        document.getElementById(stateId).style.display = 'flex';
+      }
+    }
+
+    // ── Formatting ───────────────────────────────────────────────
+    function fmt(n) { return n.toLocaleString('en-US'); }
+
+    function fmtDollars(str) {
+      const n = parseFloat(str);
+      return '$' + n.toFixed(6);
+    }
+
+    function microToDollarStr(micro) {
+      const dollars = Math.floor(micro / 1_000_000);
+      const remainder = micro % 1_000_000;
+      return '$' + dollars + '.' + remainder.toString().padStart(6, '0');
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      const hrs = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return mins + 'm ago';
+      if (hrs < 24) return hrs + 'h ago';
+      return days + 'd ago';
+    }
+
+    function quotaLevel(pct) {
+      if (pct >= 100) return 'danger';
+      if (pct >= 80) return 'warning';
+      return 'normal';
+    }
+
+    // ── Toast notifications ──────────────────────────────────────
+    function showToast(type, title, message, duration = 4000) {
+      const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+        <div class="toast-body">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('exit');
+        setTimeout(() => toast.remove(), 250);
+      }, duration);
+    }
+
+    // ── Load Dashboard ───────────────────────────────────────────
+    async function loadDashboard() {
+      const tid = document.getElementById('tenantIdInput').value.trim();
+      if (!tid) { showState('promptState'); return; }
+      currentTenantId = tid;
+      showState('skeletonState');
+
+      try {
+        const r = await fetch(API + '/usage?tenantId=' + encodeURIComponent(tid));
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          document.getElementById('errorMessage').textContent =
+            err.error?.message || 'Server returned ' + r.status;
+          showState('errorState');
+          return;
+        }
+        dashboardData = await r.json();
+        renderDashboard(dashboardData);
+        await fetchAlerts();
+        await fetchInvoices();
+      } catch {
+        document.getElementById('errorMessage').textContent =
+          'Could not connect to ' + API + '. Is the backend running?';
+        showState('errorState');
+      }
+    }
+
+    // ── Render Dashboard ─────────────────────────────────────────
+    function renderDashboard(d) {
+      // Plan badge
+      const badge = document.getElementById('planBadge');
+      badge.className = 'plan-badge ' + d.plan.name;
+      document.getElementById('planName').textContent = d.plan.displayName;
+
+      // Tenant name
+      document.getElementById('tenantName').textContent = d.tenant.name;
+
+      // Subscription status
+      const statusEl = document.getElementById('subscriptionStatus');
+      const dot = statusEl.querySelector('.status-dot');
+      dot.className = 'status-dot ' + d.plan.status;
+      statusEl.querySelector('span:last-child').textContent =
+        d.plan.status.charAt(0).toUpperCase() + d.plan.status.slice(1).replace('_', ' ');
+
+      // Upgrade section
+      const us = document.getElementById('upgradeSection');
+      if (d.plan.name === 'pro') {
+        us.innerHTML = '<div class="pro-active-badge">✓ Pro Plan Active</div>';
+      } else {
+        us.innerHTML = `
+          <button id="upgradeBtn" class="upgrade-btn" onclick="handleUpgrade()">
+            <span class="btn-text">⚡ Upgrade to Pro</span>
+            <span class="btn-loading-text"><span class="btn-spinner-sm"></span> Upgrading…</span>
+          </button>`;
+      }
+
+      // Quota bars
+      updateQuotaCard('api', d.apiCalls);
+      updateQuotaCard('token', d.aiTokens);
+
+      // Cost
+      document.getElementById('costTotal').textContent = fmtDollars(d.cost.total.costDollars);
+      document.getElementById('costApiCalls').textContent = fmtDollars(d.cost.apiCalls.costDollars);
+      document.getElementById('costAiTokens').textContent = fmtDollars(d.cost.aiTokens.costDollars);
+
+      // Token breakdown costs
+      const tb = d.cost.aiTokens.breakdown || {};
+      document.getElementById('costInputTokens').textContent =
+        tb.inputTokens ? microToDollarStr(tb.inputTokens * PRICING.INPUT_TOKEN_RATE) : '—';
+      document.getElementById('costCachedTokens').textContent =
+        tb.cachedInputTokens ? microToDollarStr(tb.cachedInputTokens * PRICING.CACHED_INPUT_TOKEN_RATE) : '—';
+      document.getElementById('costOutputTokens').textContent =
+        tb.outputTokens ? microToDollarStr(tb.outputTokens * PRICING.OUTPUT_TOKEN_RATE) : '—';
+      document.getElementById('costReasoningTokens').textContent =
+        tb.reasoningTokens ? microToDollarStr(tb.reasoningTokens * PRICING.REASONING_TOKEN_RATE) : '—';
+
+      // Events
+      renderEvents(d.recentEvents);
+
+      // Quota hint
+      updateQuotaHint();
+
+      showState('dashboard');
+    }
+
+    function updateQuotaCard(prefix, data) {
+      const pct = data.percentage;
+      let level = quotaLevel(pct);
+      if (pct > 100) level = 'danger'; // Overage is danger
+
+      document.getElementById(prefix + 'QuotaCard').className = 'card quota-card ' + level;
+      document.getElementById(prefix + 'Used').textContent = fmt(data.used);
+      document.getElementById(prefix + 'Limit').textContent = '/ ' + fmt(data.limit);
+
+      const fillPct = Math.min(pct, 100);
+      document.getElementById(prefix + 'BarFill').style.width = fillPct + '%';
+
+      if (pct > 100) {
+        document.getElementById(prefix + 'Percentage').innerHTML = `<span style="color: var(--red);">Overage: ${pct}%</span>`;
+      } else {
+        document.getElementById(prefix + 'Percentage').textContent = pct + '%';
+      }
+    }
+
+
+    // ── Alerts ───────────────────────────────────────────────────
+    async function fetchAlerts() {
+      try {
+        const r = await fetch(API + '/alerts?tenantId=' + encodeURIComponent(currentTenantId));
+        if (r.ok) {
+          const data = await r.json();
+          renderAlerts(data.alerts || []);
+        }
+      } catch (e) { console.error('Failed to fetch alerts', e); }
+    }
+
+    function renderAlerts(alerts) {
+      const container = document.getElementById('alertsContainer');
+      const list = document.getElementById('alertsList');
+      if (!alerts || alerts.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'block';
+      list.innerHTML = alerts.map(a => {
+        const typeName = a.usage_type === 'api_call' ? 'API Calls' : 'AI Tokens';
+        return `<div>• You have reached <strong>${a.threshold_pct}%</strong> of your ${typeName} quota for this month.</div>`;
+      }).join('');
+    }
+
+
+    // ── Invoices ─────────────────────────────────────────────────
+    async function fetchInvoices() {
+      try {
+        const r = await fetch(API + '/invoices?tenantId=' + encodeURIComponent(currentTenantId));
+        if (r.ok) {
+          const data = await r.json();
+          renderInvoices(data.invoices || []);
+        }
+      } catch (e) { console.error('Failed to fetch invoices', e); }
+    }
+
+    function renderInvoices(invoices) {
+      const tbody = document.getElementById('invoicesBody');
+      if (!invoices || invoices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-events"><div class="empty-icon">📄</div>No invoices generated yet. Click "Test End of Month Rollup" above.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = invoices.map((inv, i) => {
+        let detailsHtml = `
+          <div style="display:flex;gap:8px;">
+            <button class="metadata-toggle" onclick="toggleInvoice(${i})">Show line items</button>
+            <a href="${API}/invoices/${inv.id}/pdf?tenantId=${currentTenantId}" target="_blank" style="text-decoration:none;" class="metadata-toggle">📄 PDF</a>
+          </div>
+        `;
+
+        let metaRow = `<tr class="metadata-detail" id="invoice-meta-${i}"><td colspan="4">
+          <div class="metadata-chips" style="flex-direction: column; align-items: stretch;">
+            ${inv.lineItems.map(item =>
+          `<div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 4px 0;">
+                <span>${item.description} (${fmt(item.quantity)})</span>
+                <strong>${item.amountDollars}</strong>
+              </div>`
+        ).join('')}
+          </div>
+        </td></tr>`;
+
+        return `<tr>
+          <td><span class="type-badge api_call">${new Date(inv.billingMonth).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span></td>
+          <td>${inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</td>
+          <td>${detailsHtml}</td>
+          <td class="time-val" style="font-weight: bold; color: var(--green);">${inv.totalAmountDollars}</td>
+        </tr>${metaRow}`;
+      }).join('');
+    }
+
+    function toggleInvoice(i) {
+      const row = document.getElementById('invoice-meta-' + i);
+      if (row) row.classList.toggle('visible');
+    }
+
+    async function triggerRollup() {
+      const btn = document.getElementById('btnRollup');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+      try {
+        const r = await fetch(API + '/invoices/trigger-rollup', { method: 'POST' });
+        if (r.ok) {
+          showToast('success', 'Rollup Complete', 'Monthly invoice generated.');
+          await fetchInvoices();
+        } else {
+          showToast('error', 'Rollup Failed', 'Failed to generate invoice.');
+        }
+      } catch (e) {
+        showToast('error', 'Connection Error', 'Failed to reach server.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test End of Month Rollup';
+      }
+    }
+
+    // ── Events table ─────────────────────────────────────────────
+    function renderEvents(events) {
+      const tbody = document.getElementById('eventsBody');
+      if (!events || events.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-events"><div class="empty-icon">📋</div>No events yet</td></tr>';
+        return;
+      }
+
+      const filtered = currentFilter === 'all'
+        ? events
+        : events.filter(e => e.usageType === currentFilter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-events"><div class="empty-icon">🔍</div>No matching events</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((e, i) => {
+        const typeName = e.usageType === 'api_call' ? 'API Call' : 'AI Tokens';
+        const meta = e.metadata;
+        const hasMetadata = meta && e.usageType === 'ai_tokens' &&
+          (meta.input_tokens || meta.cached_input_tokens || meta.output_tokens || meta.reasoning_tokens);
+
+        let detailsHtml = '—';
+        if (hasMetadata) {
+          detailsHtml = `<button class="metadata-toggle" onclick="toggleMetadata(${i})">Show details</button>`;
+        }
+
+        let metaRow = '';
+        if (hasMetadata) {
+          metaRow = `<tr class="metadata-detail" id="meta-${i}"><td colspan="4">
+            <div class="metadata-chips">
+              ${meta.input_tokens ? `<span class="metadata-chip"><span class="token-label-dot dot-input" style="width:6px;height:6px;"></span>Input: <span class="metadata-chip-val">${fmt(meta.input_tokens)}</span></span>` : ''}
+              ${meta.cached_input_tokens ? `<span class="metadata-chip"><span class="token-label-dot dot-cached" style="width:6px;height:6px;"></span>Cached: <span class="metadata-chip-val">${fmt(meta.cached_input_tokens)}</span></span>` : ''}
+              ${meta.output_tokens ? `<span class="metadata-chip"><span class="token-label-dot dot-output" style="width:6px;height:6px;"></span>Output: <span class="metadata-chip-val">${fmt(meta.output_tokens)}</span></span>` : ''}
+              ${meta.reasoning_tokens ? `<span class="metadata-chip"><span class="token-label-dot dot-reasoning" style="width:6px;height:6px;"></span>Reasoning: <span class="metadata-chip-val">${fmt(meta.reasoning_tokens)}</span></span>` : ''}
+            </div>
+          </td></tr>`;
+        }
+
+        return `<tr>
+          <td><span class="type-badge ${e.usageType}">${typeName}</span></td>
+          <td class="quantity-val">${fmt(e.quantity)}</td>
+          <td>${detailsHtml}</td>
+          <td class="time-val">${timeAgo(e.createdAt)}</td>
+        </tr>${metaRow}`;
+      }).join('');
+    }
+
+    function toggleMetadata(i) {
+      const row = document.getElementById('meta-' + i);
+      if (row) row.classList.toggle('visible');
+    }
+
+    function filterEvents(type) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === type);
+      });
+      if (dashboardData) renderEvents(dashboardData.recentEvents);
+    }
+
+    // ── Usage type toggle ────────────────────────────────────────
+    function setUsageType(type) {
+      currentUsageType = type;
+      document.querySelectorAll('.usage-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === type);
+      });
+      document.getElementById('apiCallFields').style.display = type === 'api_call' ? 'block' : 'none';
+      document.getElementById('aiTokenFields').style.display = type === 'ai_tokens' ? 'block' : 'none';
+      updateCostPreview();
+      updateQuotaHint();
+    }
+
+    // ── Token slider sync ────────────────────────────────────────
+    function syncToken(name) {
+      const slider = document.getElementById('slider' + cap(name));
+      const input = document.getElementById('val' + cap(name));
+      input.value = slider.value;
+      updateTokenCosts();
+    }
+
+    function syncTokenFromInput(name) {
+      const slider = document.getElementById('slider' + cap(name));
+      const input = document.getElementById('val' + cap(name));
+      let v = parseInt(input.value) || 0;
+      if (v < 0) v = 0;
+      slider.value = Math.min(v, parseInt(slider.max));
+      updateTokenCosts();
+    }
+
+    function cap(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function getTokenValues() {
+      return {
+        input: parseInt(document.getElementById('valInput').value) || 0,
+        cached: parseInt(document.getElementById('valCached').value) || 0,
+        output: parseInt(document.getElementById('valOutput').value) || 0,
+        reasoning: parseInt(document.getElementById('valReasoning').value) || 0,
+      };
+    }
+
+    function updateTokenCosts() {
+      const t = getTokenValues();
+      document.getElementById('costInput').textContent = microToDollarStr(t.input * PRICING.INPUT_TOKEN_RATE);
+      document.getElementById('costCached').textContent = microToDollarStr(t.cached * PRICING.CACHED_INPUT_TOKEN_RATE);
+      document.getElementById('costOutput').textContent = microToDollarStr(t.output * PRICING.OUTPUT_TOKEN_RATE);
+      document.getElementById('costReasoning').textContent = microToDollarStr(t.reasoning * PRICING.REASONING_TOKEN_RATE);
+      const total = t.input + t.cached + t.output + t.reasoning;
+      document.getElementById('totalTokens').textContent = fmt(total);
+      updateCostPreview();
+    }
+
+    // ── Cost preview ─────────────────────────────────────────────
+    function updateCostPreview() {
+      let cost = 0;
+      if (currentUsageType === 'api_call') {
+        const qty = parseInt(document.getElementById('apiQuantity').value) || 0;
+        cost = qty * PRICING.API_CALL_RATE;
+      } else {
+        const t = getTokenValues();
+        cost = (t.input * PRICING.INPUT_TOKEN_RATE) +
+          (t.cached * PRICING.CACHED_INPUT_TOKEN_RATE) +
+          (t.output * PRICING.OUTPUT_TOKEN_RATE) +
+          (t.reasoning * PRICING.REASONING_TOKEN_RATE);
+      }
+      document.getElementById('eventCostPreview').textContent = microToDollarStr(cost);
+    }
+
+    function updateQuotaHint() {
+      const el = document.getElementById('quotaHint');
+      if (!dashboardData) { el.textContent = '—'; return; }
+      if (currentUsageType === 'api_call') {
+        const remaining = dashboardData.apiCalls.limit - dashboardData.apiCalls.used;
+        el.textContent = `${fmt(Math.max(0, remaining))} API calls remaining`;
+      } else {
+        const remaining = dashboardData.aiTokens.limit - dashboardData.aiTokens.used;
+        el.textContent = `${fmt(Math.max(0, remaining))} tokens remaining`;
+      }
+    }
+
+    // ── Submit usage event ───────────────────────────────────────
+    let submitInFlight = false;
+
+    async function submitUsageEvent() {
+      if (submitInFlight || !currentTenantId) return;
+      const btn = document.getElementById('generateBtn');
+      submitInFlight = true;
+      btn.disabled = true;
+      btn.textContent = '⏳ Sending…';
+
+      try {
+        let body;
+        if (currentUsageType === 'api_call') {
+          const qty = parseInt(document.getElementById('apiQuantity').value) || 1;
+          const key = document.getElementById('apiIdempotencyKey').value.trim() || crypto.randomUUID();
+          body = {
+            tenantId: currentTenantId,
+            usageType: 'api_call',
+            quantity: qty,
+            idempotencyKey: key,
+          };
+        } else {
+          const t = getTokenValues();
+          const total = t.input + t.cached + t.output + t.reasoning;
+          if (total <= 0) {
+            showToast('warning', 'No tokens', 'Set at least one token value above zero.');
+            return;
+          }
+          const key = document.getElementById('tokenIdempotencyKey').value.trim() || crypto.randomUUID();
+          body = {
+            tenantId: currentTenantId,
+            usageType: 'ai_tokens',
+            quantity: total,
+            idempotencyKey: key,
+            metadata: {
+              input_tokens: t.input,
+              cached_input_tokens: t.cached,
+              output_tokens: t.output,
+              reasoning_tokens: t.reasoning,
+            },
+          };
+        }
+
+        const r = await fetch(API + '/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const data = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+          const code = r.status;
+          if (code === 429) {
+            showToast('error', 'Quota exceeded', data.error?.message || 'You have exceeded your plan limit.');
+          } else if (code === 402) {
+            showToast('error', 'Payment required', data.error?.message || 'Subscription is not active.');
+          } else {
+            showToast('error', 'Request failed', data.error?.message || 'HTTP ' + code);
+          }
+          return;
+        }
+
+        if (data.wasNew === false) {
+          showToast('warning', 'Duplicate request', 'This idempotency key was already used. No new event recorded.');
+        } else {
+          const costStr = currentUsageType === 'api_call'
+            ? microToDollarStr(body.quantity * PRICING.API_CALL_RATE)
+            : microToDollarStr(
+              (body.metadata.input_tokens * PRICING.INPUT_TOKEN_RATE) +
+              (body.metadata.cached_input_tokens * PRICING.CACHED_INPUT_TOKEN_RATE) +
+              (body.metadata.output_tokens * PRICING.OUTPUT_TOKEN_RATE) +
+              (body.metadata.reasoning_tokens * PRICING.REASONING_TOKEN_RATE)
+            );
+          showToast('success', 'Event recorded!',
+            `${body.quantity.toLocaleString()} ${currentUsageType === 'api_call' ? 'API call(s)' : 'tokens'} • ${costStr}`);
+
+          // Success pulse on button
+          btn.classList.add('success');
+          setTimeout(() => btn.classList.remove('success'), 600);
+        }
+
+        // Clear idempotency keys for next request
+        document.getElementById('apiIdempotencyKey').value = '';
+        document.getElementById('tokenIdempotencyKey').value = '';
+
+        // Reload dashboard to show updated data
+        await loadDashboard();
+
+      } catch (err) {
+        showToast('error', 'Connection failed', 'Could not reach the server.');
+      } finally {
+        submitInFlight = false;
+        btn.disabled = false;
+        btn.textContent = '🚀 Send Request';
+      }
+    }
+
+    // ── Upgrade handler ──────────────────────────────────────────
+    let upgradeInFlight = false;
+
+    async function handleUpgrade() {
+      if (upgradeInFlight || !currentTenantId) return;
+      const btn = document.getElementById('upgradeBtn');
+      if (!btn) return;
+      upgradeInFlight = true;
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      try {
+        // Use mock-upgrade (works with start-with-mock-db.js)
+        const r = await fetch(API + '/mock-upgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenantId: currentTenantId }),
+        });
+        const data = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+          showToast('error', 'Upgrade failed', data.error?.message || 'Unknown error');
+          return;
+        }
+
+        showToast('success', '🎉 Upgraded to Pro!', 'Your limits are now 50,000 API calls and 5,000,000 AI tokens per month.');
+        await loadDashboard();
+
+      } catch {
+        showToast('error', 'Upgrade failed', 'Could not connect to the server.');
+      } finally {
+        upgradeInFlight = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('loading');
+        }
+      }
+    }
+
+    // ── Test Runner ──────────────────────────────────────────────
+    let testsInFlight = false;
+    async function runTests() {
+      if (testsInFlight) return;
+      const btn = document.getElementById('btnRunTests');
+      const resultsDiv = document.getElementById('testResults');
+      const summaryDiv = document.getElementById('testSummary');
+
+      testsInFlight = true;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="btn-spinner-sm"></span> Running Tests...';
+      resultsDiv.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; margin-top: 10px;">Running Jest test suites in the background. This may take a few seconds...</div>';
+      summaryDiv.style.display = 'none';
+
+      try {
+        const r = await fetch(API + '/tests/run', {
+          method: 'POST',
+        });
+        const data = await r.json();
+
+        renderTestResults(data);
+      } catch (err) {
+        showToast('error', 'Test Run Failed', 'Could not run tests on the server.');
+        resultsDiv.innerHTML = '<div style="color: var(--red); font-size: 12px;">Error connecting to server.</div>';
+      } finally {
+        testsInFlight = false;
+        btn.disabled = false;
+        btn.innerHTML = '▶ Run All Tests';
+      }
+    }
+
+    function renderTestResults(data) {
+      document.getElementById('testSummary').style.display = 'block';
+      document.getElementById('testTotal').textContent = data.total || 0;
+      document.getElementById('testPassed').textContent = data.passed || 0;
+      document.getElementById('testFailed').textContent = data.failed || 0;
+      document.getElementById('testDuration').textContent = data.duration || '—';
+
+      const failStat = document.getElementById('testFailStat');
+      if (data.failed > 0) failStat.style.display = 'flex';
+      else failStat.style.display = 'none';
+
+      const badge = document.getElementById('testOverallBadge');
+      if (data.failed > 0) {
+        badge.className = 'test-overall-badge fail';
+        badge.textContent = 'FAILING';
+      } else if (data.passed > 0) {
+        badge.className = 'test-overall-badge pass';
+        badge.textContent = 'PASSING';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      let html = '';
+      for (const suite of (data.suites || [])) {
+        const suiteStatusClass = suite.status === 'PASS' ? 'pass' : 'fail';
+        const suiteIcon = suite.status === 'PASS' ? '✓' : '✕';
+        html += `
+          <div class="test-suite">
+            <div class="test-suite-header ${suiteStatusClass}">
+              <span>${suiteIcon}</span> <span>${suite.file}</span>
+            </div>
+        `;
+        for (const desc of suite.describes) {
+          html += `<div class="test-describe">${desc.name}</div>`;
+          for (const test of desc.tests) {
+            const tcClass = test.passed ? 'pass' : 'fail';
+            const tcIcon = test.passed ? '✓' : '✕';
+            html += `
+              <div class="test-case ${tcClass}">
+                <span>${tcIcon}</span> <span>${test.name}</span> <span style="color: var(--text-dim)">(${test.duration} ms)</span>
+              </div>
+            `;
+          }
+        }
+        html += `</div>`;
+      }
+      document.getElementById('testResults').innerHTML = html;
+    }
+
+    // ── Keyboard shortcut ────────────────────────────────────────
+    document.getElementById('tenantIdInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') loadDashboard();
+    });
+  </script>
+</body>
+
+</html>

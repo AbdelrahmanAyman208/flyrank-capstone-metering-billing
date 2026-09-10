@@ -1,0 +1,36 @@
+# Capstone manifest
+name: usage-metering-billing-engine
+description: Usage metering, quota enforcement, cost calculation, and Stripe billing for a multi-tenant SaaS
+
+run:
+  - docker compose up -d
+  - npm install
+  - npm run setup
+  - npm run dev
+
+seed:
+  - npm run seed
+
+test:
+  - npm test
+  - bash scripts/test-probes.sh
+
+base_url: http://localhost:3000
+
+endpoints:
+  - method: POST
+    path: /generate
+    description: Record a billable usage event (idempotent, quota-checked)
+  - method: GET
+    path: /usage
+    params: tenantId
+    description: Current-month usage rollup with cost breakdown
+  - method: POST
+    path: /checkout
+    description: Create Stripe Checkout session for Pro upgrade
+  - method: POST
+    path: /webhooks/stripe
+    description: Stripe webhook receiver (signature-verified, deduplicated)
+  - method: GET
+    path: /health
+    description: Health check
